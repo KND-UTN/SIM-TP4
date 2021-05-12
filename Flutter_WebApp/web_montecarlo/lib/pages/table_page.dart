@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:web_montecarlo/controllers/table_controller.dart';
 import 'package:web_montecarlo/models/experiment.dart';
 import 'package:web_montecarlo/widgets/custom_datatable.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TablePage extends StatefulWidget {
   @override
@@ -11,44 +13,58 @@ class TablePage extends StatefulWidget {
 }
 
 class _TablePageState extends State<TablePage> {
+  @override
+  void initState() {
+    final tablePageController =
+        Provider.of<TableController>(context, listen: false);
+    tablePageController.controllerN.text = '0';
+    tablePageController.controllerDesde.text = '0';
+    tablePageController.controllerHasta.text = '0';
+    tablePageController.controllerStock.text = '15';
+    tablePageController.controllerQ.text = '15';
+    tablePageController.controllerR.text = '10';
+    tablePageController.controllerKo.text = '50';
+    tablePageController.controllerKm.text = '5';
+    tablePageController.controllerKs.text = '8';
 
-  int n = 0;
-  int desde = 0;
-  int hasta = 0;
+    super.initState();
+  }
+
+  Future<List<Experiment>> _getExperiments(List<String> values) async {
+    List<Experiment> list = [];
 
 
-  Future<List<Experiment>> _getExperiments() async {
 
-
-     // mandar n, desde, hasta.
-     //var url = Uri.parse('https://example.com/whatsit/create');
-     // ar data = await http.post(url, body: {'name': 'doodle', 'color': 'blue'});
-
-    var data = {
-      "Reloj": 0,
-      "RND Demanda": 0.45,
-      "Demanda": 4,
-      "RND Demora": 0.65,
-      "Demora": 6,
-      "Pedido": true,
-      "Llegada": 7,
-      "Disponible": 15,
-      "Stock": 15,
-      "Ko": 45.3,
-      "Km": 324.4,
-      "ks": 50.3,
-      "Costo Total": 23.5,
-      "Costo AC": 0.0
+    final queryParams = {
+      "inicial": values[3],
+      "q": values[4],
+      "r": values[5],
+      "ko": values[6],
+      "km": values[7],
+      "ks": values[8],
+      "desde": values[1],
+      "hasta": values[2],
+      "n": values[0]
     };
 
-    // return data;
+    print(queryParams);
 
-    return Future.delayed(Duration(milliseconds: 1000)).then((value) => Future.value([Experiment.fromJson(data)]));
+    var uri = Uri.http('181.165.188.208:5000 ', '/procesar', queryParams);
+    Response res = await http.get(uri);
 
+    List data = jsonDecode(res.body);
+
+
+    for (var row in data) {
+      list.add(Experiment.fromJson(row));
+    }
+    return Future.value(list);
   }
 
   @override
   Widget build(BuildContext context) {
+    final tablePageController = Provider.of<TableController>(context);
+
     return Scaffold(
         appBar: AppBar(
           leadingWidth: 200,
@@ -77,92 +93,100 @@ class _TablePageState extends State<TablePage> {
               children: [
                 _DashBoard(),
                 InkWell(
-                onTap: () {
-
-                  final tablePageController = Provider.of<TableController>(context, listen: false);
-
-                  n = int.parse(tablePageController.controllerN.text);
-                  desde = int.parse(tablePageController.controllerDesde.text);
-                  hasta = int.parse(tablePageController.controllerHasta.text);
-
-
-
-
-
-                  setState(() {
-                  });      
-                },
-                child: Container(
-                    height: 40,
-                    width: 300,
-                    decoration: BoxDecoration(
-                        color: Colors.red[300],
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Center(
-                        child: Text(
-                      'Test',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w100),
-                    ))))
+                  onTap: () {
+                    setState(() {});
+                  },
+                  child: Container(
+                      height: 40,
+                      width: 300,
+                      decoration: BoxDecoration(
+                          color: Colors.red[300],
+                          borderRadius: BorderRadius.circular(5)),
+                      child: Center(
+                          child: Text(
+                        'Test',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w100),
+                      ))),
+                ),
               ],
             ),
             Container(
-              color: Colors.white,
+              color: Colors.white70,
               width: 3,
               height: MediaQuery.of(context).size.height,
             ),
             Expanded(
               child: FutureBuilder(
-                future: _getExperiments(),
-                builder:
-                  (context, AsyncSnapshot<List<Experiment>?> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  default:
-                    if (snapshot.hasError) {
-                    print(snapshot.error);
-                    return Text('Error');
+                  future: _getExperiments([
+                    tablePageController.controllerN.text,
+    tablePageController.controllerDesde.text,
+    tablePageController.controllerHasta.text,
+    tablePageController.controllerStock.text,
+    tablePageController.controllerQ.text,
+    tablePageController.controllerR.text,
+    tablePageController.controllerKo.text,
+    tablePageController.controllerKm.text,
+    tablePageController.controllerKs.text ,
 
+                  ]),
+                  builder:
+                      (context, AsyncSnapshot<List<Experiment>?> snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      default:
+                        if (snapshot.hasError) {
+                          print(snapshot.error);
+                          return Text('Complete todos los campos');
+                        }
+
+                        var list = snapshot.data!;
+
+                        if(list.isNotEmpty)
+                        list.removeLast();
+
+                        return Column(
+                          children: [
+                            Expanded(
+                                flex: 5,
+                                child: CustomDataTable(
+                                  experiments: list,
+                                )),
+                            Container(
+                                margin: EdgeInsets.symmetric(vertical: 15),
+                                child: Text(
+                                  'Resultado',
+                                  style: TextStyle(fontSize: 25),
+                                )),
+                            Expanded(
+                                flex: 1,
+                                child: CustomDataTable(
+                                  experiments: snapshot.data!.isEmpty
+                                      ? []
+                                      : [snapshot.data!.last],
+                                )),
+                          ],
+                        );
                     }
-                    return Column(
-                      children: [
-                        Expanded(
-                            flex: 5,
-                            child: CustomDataTable(
-                              experiments: snapshot.data!,
-                            )),
-                        Container(
-                            margin: EdgeInsets.symmetric(vertical: 15),
-                            child: Text(
-                              'Resultado',
-                              style: TextStyle(fontSize: 25),
-                            )),
-                        Expanded(
-                            flex: 1,
-                            child: CustomDataTable(
-                              experiments: snapshot.data!.isEmpty
-                                  ? []
-                                  : [snapshot.data!.last],
-                            )),
-                      ],
-                    );
-                }
-              }),
+                  }),
             ),
           ],
         ));
   }
 }
 
-class _DashBoard extends StatelessWidget {
+class _DashBoard extends StatefulWidget {
+  @override
+  __DashBoardState createState() => __DashBoardState();
+}
+
+class __DashBoardState extends State<_DashBoard> {
   @override
   Widget build(BuildContext context) {
-
     final tablePageController = Provider.of<TableController>(context);
-    
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -172,7 +196,9 @@ class _DashBoard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             _DashBoardForm(
-                hintText: 'Ingrese N...', controller: tablePageController.controllerN, label: 'N:'),
+                hintText: 'Ingrese N...',
+                controller: tablePageController.controllerN,
+                label: 'N:'),
             _DashBoardForm(
                 hintText: 'Desde...',
                 controller: tablePageController.controllerDesde,
@@ -181,10 +207,34 @@ class _DashBoard extends StatelessWidget {
                 hintText: 'Hasta...',
                 controller: tablePageController.controllerHasta,
                 label: 'Hasta:'),
+            SizedBox(height: 30),
+            _DashBoardForm(
+                hintText: '',
+                controller: tablePageController.controllerStock,
+                label: 'Stock:'),
+            _DashBoardForm(
+                hintText: '',
+                controller: tablePageController.controllerQ,
+                label: 'Q:'),
+            _DashBoardForm(
+                hintText: '',
+                controller: tablePageController.controllerR,
+                label: 'R:'),
+            _DashBoardForm(
+                hintText: '',
+                controller: tablePageController.controllerKo,
+                label: 'Ko:'),
+            _DashBoardForm(
+                hintText: '',
+                controller: tablePageController.controllerKm,
+                label: 'Km:'),
+            _DashBoardForm(
+                hintText: '',
+                controller: tablePageController.controllerKs,
+                label: 'Ks:'),
             SizedBox(
               height: 20,
             ),
-            
           ],
         ),
       ),

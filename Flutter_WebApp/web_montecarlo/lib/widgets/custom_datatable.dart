@@ -58,6 +58,12 @@ class _CustomDataTableState extends State<CustomDataTable> {
                 alignment: Alignment.center,
                 child: Text('RND Demora'))),
         GridTextColumn(
+            columnName: 'Demora',
+            label: Container(
+                padding: EdgeInsets.all(8.0),
+                alignment: Alignment.center,
+                child: Text('Demora'))),
+        GridTextColumn(
             columnName: 'Pedido',
             label: Container(
                 padding: EdgeInsets.all(8.0),
@@ -110,7 +116,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
             label: Container(
                 padding: EdgeInsets.all(8.0),
                 alignment: Alignment.center,
-                child: Text('Costo Acumulado'))),
+                child: Text('Costo Acumulado', textAlign: TextAlign.center,))),
       ],
     );
   }

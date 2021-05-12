@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'dart:convert';
 
+import 'package:web_montecarlo/helpers/helpers.dart';
+
 Experiment experimentFromJson(String str) => Experiment.fromJson(json.decode(str));
 
 String experimentToJson(Experiment data) => json.encode(data.toJson());
@@ -29,36 +31,36 @@ class Experiment {
         required this.costoAc,
     });
 
-    int reloj;
-    double rndDemanda;
-    int demanda;
-    double rndDemora;
-    int demora;
-    bool pedido;
-    int llegada;
-    int disponible;
-    int stock;
-    double ko;
-    double km;
-    double ks;
-    double costoTotal;
-    double costoAc;
+    String reloj;
+    String rndDemanda;
+    String demanda;
+    String rndDemora;
+    String demora;
+    String pedido;
+    String llegada;
+    String disponible;
+    String stock;
+    String ko;
+    String km;
+    String ks;
+    String costoTotal;
+    String costoAc;
 
     factory Experiment.fromJson(Map<String, dynamic> json) => Experiment(
-        reloj: json["Reloj"],
-        rndDemanda: json["RND Demanda"].toDouble(),
-        demanda: json["Demanda"],
-        rndDemora: json["RND Demora"].toDouble(),
-        demora: json["Demora"],
-        pedido: json["Pedido"],
-        llegada: json["Llegada"],
-        disponible: json["Disponible"],
-        stock: json["Stock"],
-        ko: json["Ko"].toDouble(),
-        km: json["Km"].toDouble(),
-        ks: json["ks"].toDouble(),
-        costoTotal: json["Costo Total"].toDouble(),
-        costoAc: json["Costo AC"],
+        reloj: json["Reloj"].toString(),
+        rndDemanda: trunc(json["RND Demanda"].toString()),
+        demanda: json["Demanda"].toString(),
+        rndDemora: json["RND Demora"] != 0 ? trunc(json["RND Demora"].toString()) : '', 
+        demora: json["Demora"] != null ? json["Demora"].toString() : '',
+        pedido: json["Pedido"] ? 'SI' : 'NO',
+        llegada: json["Llegada"] != null ? json["Llegada"].toString() : '',
+        disponible: json["Disponible"] != 0 ? json["Disponible"].toString() : '',
+        stock: json["Stock"] != null ? json["Stock"].toString() : '',
+        ko: json["Ko"].toString(),
+        km: json["Km"].toString(),
+        ks: json["Ks"].toString(),
+        costoTotal: json["Costo Total"].toString(),
+        costoAc: json["Costo AC"].toString(),
     );
 
     Map<String, dynamic> toJson() => {
@@ -73,7 +75,7 @@ class Experiment {
         "Stock": stock,
         "Ko": ko,
         "Km": km,
-        "ks": ks,
+        "Ks": ks,
         "Costo Total": costoTotal,
         "Costo AC": costoAc,
     };
@@ -87,19 +89,20 @@ class ExperimentDataSource extends DataGridSource {
   ExperimentDataSource({required List<Experiment> experimentData}) {
     _experimentData = experimentData
         .map<DataGridRow>((e) => DataGridRow(cells: [
-              DataGridCell<int>(columnName: 'Reloj', value: e.reloj),
-              DataGridCell<double>(columnName: 'RND Demanda', value: e.rndDemanda),
-              DataGridCell<int>(columnName: 'Demanda', value: e.demanda),
-              DataGridCell<double>(columnName: 'RND Demora', value: e.rndDemora),
-              DataGridCell<bool>(columnName: 'Pedido', value: e.pedido),
-              DataGridCell<int>(columnName: 'Llegada', value: e.llegada),
-              DataGridCell<int>(columnName: 'Disponible', value: e.disponible),
-              DataGridCell<int>(columnName: 'Stock', value: e.stock),
-              DataGridCell<double>(columnName: 'Ko', value: e.ko),
-              DataGridCell<double>(columnName: 'Km', value: e.km),
-              DataGridCell<double>(columnName: 'Ks', value: e.ks),
-              DataGridCell<double>(columnName: 'Costo Total', value: e.costoTotal),
-              DataGridCell<double>(columnName: 'Costo Acumulado', value: e.costoAc),              
+              DataGridCell<String>(columnName: 'Reloj', value: e.reloj),
+              DataGridCell<String>(columnName: 'RND Demanda', value: e.rndDemanda),
+              DataGridCell<String>(columnName: 'Demanda', value: e.demanda),
+              DataGridCell<String>(columnName: 'RND Demora', value: e.rndDemora),
+              DataGridCell<String>(columnName: 'Demora', value: e.demora),
+              DataGridCell<String>(columnName: 'Pedido', value: e.pedido),
+              DataGridCell<String>(columnName: 'Llegada', value: e.llegada),
+              DataGridCell<String>(columnName: 'Disponible', value: e.disponible),
+              DataGridCell<String>(columnName: 'Stock', value: e.stock),
+              DataGridCell<String>(columnName: 'Ko', value: e.ko),
+              DataGridCell<String>(columnName: 'Km', value: e.km),
+              DataGridCell<String>(columnName: 'Ks', value: e.ks),
+              DataGridCell<String>(columnName: 'Costo Total', value: e.costoTotal),
+              DataGridCell<String>(columnName: 'Costo Acumulado', value: e.costoAc),              
             ]))
         .toList();
   }
