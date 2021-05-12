@@ -33,8 +33,6 @@ class _TablePageState extends State<TablePage> {
   Future<List<Experiment>> _getExperiments(List<String> values) async {
     List<Experiment> list = [];
 
-
-
     final queryParams = {
       "inicial": values[3],
       "q": values[4],
@@ -53,7 +51,6 @@ class _TablePageState extends State<TablePage> {
     Response res = await http.get(uri);
 
     List data = jsonDecode(res.body);
-
 
     for (var row in data) {
       list.add(Experiment.fromJson(row));
@@ -120,15 +117,14 @@ class _TablePageState extends State<TablePage> {
               child: FutureBuilder(
                   future: _getExperiments([
                     tablePageController.controllerN.text,
-    tablePageController.controllerDesde.text,
-    tablePageController.controllerHasta.text,
-    tablePageController.controllerStock.text,
-    tablePageController.controllerQ.text,
-    tablePageController.controllerR.text,
-    tablePageController.controllerKo.text,
-    tablePageController.controllerKm.text,
-    tablePageController.controllerKs.text ,
-
+                    tablePageController.controllerDesde.text,
+                    tablePageController.controllerHasta.text,
+                    tablePageController.controllerStock.text,
+                    tablePageController.controllerQ.text,
+                    tablePageController.controllerR.text,
+                    tablePageController.controllerKo.text,
+                    tablePageController.controllerKm.text,
+                    tablePageController.controllerKs.text,
                   ]),
                   builder:
                       (context, AsyncSnapshot<List<Experiment>?> snapshot) {
@@ -143,10 +139,11 @@ class _TablePageState extends State<TablePage> {
                           return Text('Complete todos los campos');
                         }
 
-                        var list = snapshot.data!;
+                        List<Experiment> list = [];
+                        
+                        list.addAll(snapshot.data!);
 
-                        if(list.isNotEmpty)
-                        list.removeLast();
+                        if (list.isNotEmpty) list.removeLast();
 
                         return Column(
                           children: [
